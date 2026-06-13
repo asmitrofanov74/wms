@@ -9,6 +9,7 @@ import { WarehousesModule } from './api/warehouses/warehouses.module';
 import { ProductsModule } from './api/products/products.module';
 import { ReceivingModule } from './api/receiving/receiving.module';
 import { ShippingModule } from './api/shipping/shipping.module';
+import { InventoryModule } from './api/inventory/inventory.module';
 import { SeedModule } from './infrastructure/persistence/seeds/seed.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { SeedModule } from './infrastructure/persistence/seeds/seed.module';
     ProductsModule,
     ReceivingModule,
     ShippingModule,
+    InventoryModule,
     SeedModule,
   ],
 })

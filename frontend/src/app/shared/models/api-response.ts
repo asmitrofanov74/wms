@@ -320,3 +320,24 @@ export interface PickItemsRequest {
 export interface PackItemsRequest {
   items: LineItemRequest[];
 }
+
+export interface InventoryItem {
+  id: string;
+  productId: string;
+  productSku: string;
+  productName: string;
+  locationId: string;
+  locationCode: string;
+  quantityOnHand: number;
+  quantityReserved: number;
+  availableQuantity: number;
+  reorderPoint: number;
+  reorderQuantity: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AdjustInventoryRequest {
+  quantityOnHand: number;
+  reason?: string;
+}
