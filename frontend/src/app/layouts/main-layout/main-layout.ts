@@ -144,6 +144,9 @@ import { AuthService } from '../../core/auth/auth.service';
       .active-link .mat-icon {
         color: #3f51b5;
       }
+      .mat-badge-content {
+        z-index: 1;
+      }
     `,
   ],
 })
