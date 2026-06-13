@@ -149,3 +149,79 @@ export interface Category {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface ProductUom {
+  id: string;
+  productId: string;
+  uomCode: string;
+  conversionFactor: number;
+  isBase: boolean;
+  weight: number;
+  width: number;
+  height: number;
+  length: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ProductBarcode {
+  id: string;
+  productId: string;
+  uomId: string;
+  barcode: string;
+  isPrimary: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ProductDetail extends Product {
+  uoms: ProductUom[];
+  barcodes: ProductBarcode[];
+}
+
+export interface CreateProductRequest {
+  sku: string;
+  name: string;
+  description?: string;
+  categoryId?: string;
+  unitWeight?: number;
+  unitVolume?: number;
+  isTracked?: boolean;
+}
+
+export interface UpdateProductRequest {
+  name?: string;
+  description?: string;
+  categoryId?: string;
+  unitWeight?: number;
+  unitVolume?: number;
+  isActive?: boolean;
+  isTracked?: boolean;
+}
+
+export interface CreateUomRequest {
+  uomCode: string;
+  conversionFactor: number;
+  isBase?: boolean;
+  weight?: number;
+  width?: number;
+  height?: number;
+  length?: number;
+}
+
+export interface CreateBarcodeRequest {
+  barcode: string;
+  uomId?: string;
+  isPrimary?: boolean;
+}
+
+export interface CreateCategoryRequest {
+  code: string;
+  name: string;
+  parentId?: string;
+}
+
+export interface UpdateCategoryRequest {
+  code?: string;
+  name?: string;
+}
