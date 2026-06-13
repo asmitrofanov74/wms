@@ -3,13 +3,19 @@ import {
   Inject,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { PasswordService } from '../../../infrastructure/auth/password.service';
 import { JwtTokenService } from '../../../infrastructure/auth/jwt.service';
 import { IUserRepository } from '../../../domain/auth/user.repository.interface';
+import { User } from '../../../domain/auth/user.entity';
+import { Role } from '../../../domain/auth/role.entity';
 import { RefreshToken } from '../../../domain/auth/refresh-token.entity';
-import { LoginResponseDto } from '../../../api/auth/dto/login.dto';
+import { LoginResponseDto, RegisterDto } from '../../../api/auth/dto/login.dto';
+import { UserResponseDto } from '../../../api/users/dto/user.dto';
 import * as crypto from 'crypto';
 import { USER_REPOSITORY } from '../../../api/common/constants/di-tokens';
 
@@ -17,6 +23,7 @@ import { USER_REPOSITORY } from '../../../api/common/constants/di-tokens';
 export class AuthService {
   constructor(
     @Inject(USER_REPOSITORY) private readonly userRepository: IUserRepository,
+    @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
     private readonly passwordService: PasswordService,
     private readonly jwtTokenService: JwtTokenService,
   ) {}
@@ -35,6 +42,29 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    return this.generateTokens(user);
+  }
+
+  async register(dto: RegisterDto): Promise<LoginResponseDto> {
+    const existing = await this.userRepository.findByEmail(dto.email);
+    if (existing) {
+      throw new ConflictException('Email already registered');
+    }
+
+    const operatorRole = await this.roleRepository.findOne({ where: { name: 'Operator' } });
+    if (!operatorRole) {
+      throw new BadRequestException('Default role not found');
+    }
+
+    const user = new User();
+    user.email = dto.email;
+    user.passwordHash = await this.passwordService.hash(dto.password);
+    user.firstName = dto.firstName;
+    user.lastName = dto.lastName;
+    user.isActive = true;
+    user.roles = [operatorRole];
+
+    await this.userRepository.save(user);
     return this.generateTokens(user);
   }
 
@@ -80,6 +110,21 @@ export class AuthService {
 
     const newHash = await this.passwordService.hash(newPassword);
     // Update user password hash in DB
+  }
+
+  async getProfile(userId: string): Promise<UserResponseDto | null> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) return null;
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      isActive: user.isActive,
+      roles: user.roles?.map((r) => r.name) || [],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   private async generateTokens(user: any): Promise<LoginResponseDto> {

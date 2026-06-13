@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from '../../application/auth/services/auth.service';
-import { LoginDto, RefreshTokenDto, ChangePasswordDto, LoginResponseDto } from './dto/login.dto';
+import { LoginDto, RefreshTokenDto, RegisterDto, ChangePasswordDto, LoginResponseDto } from './dto/login.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -10,11 +10,12 @@ describe('AuthController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [
+          providers: [
         {
           provide: AuthService,
           useValue: {
             login: jest.fn(),
+            register: jest.fn(),
             refreshTokens: jest.fn(),
             revokeRefreshTokens: jest.fn(),
             changePassword: jest.fn(),
@@ -37,6 +38,19 @@ describe('AuthController', () => {
 
       expect(result).toEqual(expected);
       expect(authService.login).toHaveBeenCalledWith('admin@wms.com', 'password123');
+    });
+  });
+
+  describe('register', () => {
+    it('should call authService.register and return tokens', async () => {
+      const dto: RegisterDto = { email: 'new@wms.com', password: 'password123', firstName: 'New', lastName: 'User' };
+      const expected: LoginResponseDto = { accessToken: 'at', refreshToken: 'rt', expiresIn: 900 };
+      authService.register.mockResolvedValue(expected);
+
+      const result = await controller.register(dto);
+
+      expect(result).toEqual(expected);
+      expect(authService.register).toHaveBeenCalledWith(dto);
     });
   });
 

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { PasswordService } from '../../../infrastructure/auth/password.service';
 import { JwtTokenService } from '../../../infrastructure/auth/jwt.service';
@@ -52,6 +53,13 @@ describe('AuthService', () => {
           useValue: {
             hash: jest.fn(),
             compare: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(Role),
+          useValue: {
+            findOne: jest.fn(),
+            save: jest.fn(),
           },
         },
         {

@@ -1,10 +1,12 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   HttpCode,
   HttpStatus,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from '../../application/auth/services/auth.service';
@@ -14,8 +16,10 @@ import {
   LoginDto,
   LoginResponseDto,
   RefreshTokenDto,
+  RegisterDto,
   ChangePasswordDto,
 } from './dto/login.dto';
+import { UserResponseDto } from '../users/dto/user.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -27,6 +31,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Authenticate user and return JWT tokens' })
   async login(@Body() dto: LoginDto): Promise<LoginResponseDto> {
     return this.authService.login(dto.email, dto.password);
+  }
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new user account' })
+  async register(@Body() dto: RegisterDto): Promise<LoginResponseDto> {
+    return this.authService.register(dto);
   }
 
   @Post('refresh')
@@ -43,6 +54,16 @@ export class AuthController {
   @ApiOperation({ summary: 'Revoke refresh token' })
   async logout(@CurrentUser('id') userId: string): Promise<void> {
     await this.authService.revokeRefreshTokens(userId);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile' })
+  async getProfile(@CurrentUser('id') userId: string): Promise<UserResponseDto> {
+    const profile = await this.authService.getProfile(userId);
+    if (!profile) throw new NotFoundException('User not found');
+    return profile;
   }
 
   @Post('change-password')

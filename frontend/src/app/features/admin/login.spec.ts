@@ -12,7 +12,7 @@ describe('LoginComponent', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    const authSpy = jasmine.createSpyObj('AuthService', ['login']);
+    const authSpy = jasmine.createSpyObj('AuthService', ['login', 'register']);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
@@ -58,10 +58,57 @@ describe('LoginComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
-  it('should not submit when email or password is empty', () => {
+  it('should not submit login when email or password is empty', () => {
     component.email = '';
     component.password = '';
     component.onSubmit();
     expect(auth.login).not.toHaveBeenCalled();
+  });
+
+  it('should navigate to dashboard on successful registration', () => {
+    component.mode.set('register');
+    component.email = 'new@wms.com';
+    component.password = 'password123';
+    component.firstName = 'New';
+    component.lastName = 'User';
+    component.confirmPassword = 'password123';
+    auth.register.and.returnValue(of({ accessToken: 'at', refreshToken: 'rt', expiresIn: 900 }));
+
+    component.onRegister();
+
+    expect(auth.register).toHaveBeenCalledWith({
+      email: 'new@wms.com',
+      password: 'password123',
+      firstName: 'New',
+      lastName: 'User',
+    });
+    expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+  });
+
+  it('should show error when passwords do not match', () => {
+    component.mode.set('register');
+    component.email = 'test@wms.com';
+    component.password = 'password123';
+    component.firstName = 'Test';
+    component.lastName = 'User';
+    component.confirmPassword = 'different';
+    component.onRegister();
+    expect(component.error).toBe('Passwords do not match');
+    expect(auth.register).not.toHaveBeenCalled();
+  });
+
+  it('should show error on registration failure', () => {
+    component.mode.set('register');
+    component.email = 'existing@wms.com';
+    component.password = 'password123';
+    component.firstName = 'Existing';
+    component.lastName = 'User';
+    component.confirmPassword = 'password123';
+    auth.register.and.returnValue(throwError(() => ({ error: { message: 'Email already registered' } })));
+
+    component.onRegister();
+
+    expect(component.error).toBe('Email already registered');
+    expect(component.loading).toBe(false);
   });
 });

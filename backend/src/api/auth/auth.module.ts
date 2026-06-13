@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtTokenService } from '../../infrastructure/auth/jwt.service';
 import { PasswordService } from '../../infrastructure/auth/password.service';
 import { User } from '../../domain/auth/user.entity';
+import { Role } from '../../domain/auth/role.entity';
 import { RefreshToken } from '../../domain/auth/refresh-token.entity';
 import { UserRepository } from '../../infrastructure/persistence/repositories/user.repository.impl';
 import { USER_REPOSITORY } from '../common/constants/di-tokens';
@@ -26,7 +27,7 @@ import { USER_REPOSITORY } from '../common/constants/di-tokens';
         },
       }),
     }),
-    TypeOrmModule.forFeature([User, RefreshToken]),
+    TypeOrmModule.forFeature([User, Role, RefreshToken]),
   ],
   controllers: [AuthController],
   providers: [

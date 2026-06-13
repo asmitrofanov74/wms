@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { HTTP_INTERCEPTORS, HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { ApiInterceptor } from './api.interceptor';
+import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { apiInterceptor } from './api.interceptor';
 import { AuthService } from '../auth/auth.service';
 import { LoginResponse } from '../../shared/models/api-response';
+import { Observable } from 'rxjs';
 
 describe('ApiInterceptor', () => {
   let http: HttpClient;
@@ -14,10 +15,9 @@ describe('ApiInterceptor', () => {
     const authSpy = jasmine.createSpyObj('AuthService', ['getAccessToken', 'refreshToken', 'logout']);
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
+        provideHttpClient(withInterceptors([apiInterceptor])),
         { provide: AuthService, useValue: authSpy },
-        { provide: HTTP_INTERCEPTORS, useClass: ApiInterceptor, multi: true },
       ],
     });
 
@@ -98,5 +98,3 @@ describe('ApiInterceptor', () => {
     req.flush('Forbidden', { status: 403, statusText: 'Forbidden' });
   });
 });
-
-import { Observable } from 'rxjs';
