@@ -31,12 +31,10 @@ import { AuthService } from '../../core/auth/auth.service';
       </button>
       <span class="app-title">WMS</span>
       <span class="spacer"></span>
-
-      <span class="badge-wrapper" [matBadge]="0" matBadgeColor="warn">
-        <button mat-icon-button>
-          <mat-icon>notifications</mat-icon>
-        </button>
-      </span>
+      <button mat-icon-button>
+        <mat-icon>notifications</mat-icon>
+      </button>
+      <span class="badge-wrapper" [matBadge]="0" matBadgeColor="warn"> </span>
 
       <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
         <mat-icon>account_circle</mat-icon>
@@ -149,6 +147,7 @@ import { AuthService } from '../../core/auth/auth.service';
       .badge-wrapper {
         display: inline-flex;
         position: relative;
+        margin-bottom: 4px;
       }
       .mat-badge-content {
         z-index: 1;
