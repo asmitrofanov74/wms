@@ -268,3 +268,55 @@ export interface ReceiveItemRequest {
 export interface ReceiveItemsRequest {
   items: ReceiveItemRequest[];
 }
+
+export interface ShippingOrderLine {
+  id: string;
+  shippingOrderId: string;
+  productId: string;
+  productName: string;
+  productSku: string;
+  orderedQuantity: number;
+  pickedQuantity: number;
+  packedQuantity: number;
+  shippedQuantity: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ShippingOrder {
+  id: string;
+  orderNumber: string;
+  customer: string;
+  shipToAddress: string;
+  status: string;
+  notes: string;
+  lines: ShippingOrderLine[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateShippingOrderRequest {
+  customer: string;
+  shipToAddress?: string;
+  notes?: string;
+  lines: { productId: string; orderedQuantity: number }[];
+}
+
+export interface UpdateShippingOrderRequest {
+  customer?: string;
+  shipToAddress?: string;
+  notes?: string;
+}
+
+export interface LineItemRequest {
+  lineId: string;
+  quantity: number;
+}
+
+export interface PickItemsRequest {
+  items: LineItemRequest[];
+}
+
+export interface PackItemsRequest {
+  items: LineItemRequest[];
+}
