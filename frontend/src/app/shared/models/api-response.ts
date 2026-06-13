@@ -225,3 +225,46 @@ export interface UpdateCategoryRequest {
   code?: string;
   name?: string;
 }
+
+export interface ReceivingOrderLine {
+  id: string;
+  receivingOrderId: string;
+  productId: string;
+  productName: string;
+  productSku: string;
+  expectedQuantity: number;
+  receivedQuantity: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ReceivingOrder {
+  id: string;
+  orderNumber: string;
+  supplier: string;
+  status: string;
+  notes: string;
+  lines: ReceivingOrderLine[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateReceivingOrderRequest {
+  supplier: string;
+  notes?: string;
+  lines: { productId: string; expectedQuantity: number }[];
+}
+
+export interface UpdateReceivingOrderRequest {
+  supplier?: string;
+  notes?: string;
+}
+
+export interface ReceiveItemRequest {
+  lineId: string;
+  receivedQuantity: number;
+}
+
+export interface ReceiveItemsRequest {
+  items: ReceiveItemRequest[];
+}

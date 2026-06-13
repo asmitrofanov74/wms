@@ -35,7 +35,7 @@ export class SeedService implements OnApplicationBootstrap {
 
   private async seedPermissions(): Promise<Permission[]> {
     const repo = this.dataSource.getRepository(Permission);
-    const resources = ['users', 'roles', 'warehouses', 'zones', 'locations', 'products', 'categories', 'inventory', 'audit', 'reports'];
+    const resources = ['users', 'roles', 'warehouses', 'zones', 'locations', 'products', 'categories', 'receiving', 'inventory', 'audit', 'reports'];
     const actions = ['create', 'read', 'update', 'delete'];
     const permissions: Permission[] = [];
     for (const resource of resources) {
