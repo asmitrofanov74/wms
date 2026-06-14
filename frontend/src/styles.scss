@@ -52,6 +52,12 @@ html, body {
   min-height: 0;
 }
 
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel,
+.mat-mdc-menu-panel {
+  background: white !important;
+}
+
 .mat-mdc-paginator-outer-container {
   background: white;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
