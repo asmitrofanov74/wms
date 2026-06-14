@@ -52,6 +52,13 @@ export class UpdateReceivingOrderDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @ApiPropertyOptional({ type: [ReceivingLineDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReceivingLineDto)
+  @IsOptional()
+  lines?: ReceivingLineDto[];
 }
 
 export class UpdateStatusDto {

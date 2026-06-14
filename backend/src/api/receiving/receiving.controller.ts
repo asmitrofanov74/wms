@@ -116,7 +116,7 @@ export class ReceivingController {
 
   @Put(':id')
   @Roles('Admin', 'Manager')
-  @ApiOperation({ summary: 'Update receiving order header' })
+  @ApiOperation({ summary: 'Update receiving order' })
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateReceivingOrderDto,
@@ -131,6 +131,24 @@ export class ReceivingController {
     }
     if (dto.supplier) order.supplier = dto.supplier;
     if (dto.notes !== undefined) order.notes = dto.notes;
+    if (dto.lines) {
+      if (dto.lines.length === 0) {
+        throw new BadRequestException('Order must have at least one line');
+      }
+      for (const line of dto.lines) {
+        const product = await this.productRepository.findOne({ where: { id: line.productId } });
+        if (!product) throw new BadRequestException(`Product ${line.productId} not found`);
+      }
+      await this.lineRepository.delete({ receivingOrderId: order.id });
+      order.lines = dto.lines.map((l) => {
+        const line = new ReceivingOrderLine();
+        line.receivingOrderId = order.id;
+        line.productId = l.productId;
+        line.expectedQuantity = l.expectedQuantity;
+        line.receivedQuantity = 0;
+        return line;
+      });
+    }
     const saved = await this.orderRepository.save(order);
     return this.toResponseDto(saved);
   }

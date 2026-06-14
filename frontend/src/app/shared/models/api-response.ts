@@ -267,6 +267,7 @@ export interface CreateReceivingOrderRequest {
 export interface UpdateReceivingOrderRequest {
   supplier?: string;
   notes?: string;
+  lines?: { productId: string; expectedQuantity: number }[];
 }
 
 export interface ReceiveItemRequest {

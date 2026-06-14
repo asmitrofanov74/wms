@@ -491,6 +491,7 @@ export class ReceivingFormDialog implements OnInit {
       ? this.service.updateOrder(this.data.order.id, {
           supplier: this.form.supplier,
           notes: this.form.notes || undefined,
+          lines,
         })
       : this.service.createOrder({
           supplier: this.form.supplier,
