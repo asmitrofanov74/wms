@@ -437,7 +437,12 @@ export class ProductFormDialog implements OnInit {
         this.snackBar.open(`Product ${this.data.product ? 'updated' : 'created'}`, 'Close', { duration: 3000 });
         this.dialogRef.close(true);
       },
-      error: (err) => { this.error.set(err.error?.message || 'Error'); this.saving.set(false); },
+      error: (err) => {
+        const msg = err.error?.message || err.statusText || 'Error';
+        const details = err.error?.details || err.error?.error;
+        this.error.set(details ? `${msg}: ${JSON.stringify(details)}` : msg);
+        this.saving.set(false);
+      },
     });
   }
 }
