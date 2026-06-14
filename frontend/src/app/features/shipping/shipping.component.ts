@@ -200,12 +200,12 @@ import { ShippingOrder, Product } from '../../shared/models/api-response';
     .mat-column-status { width: 100px; }
     .mat-column-lines { width: 70px; text-align: center; }
     .mat-column-progress { width: 90px; text-align: center; }
-    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; line-height: 1; }
-    .status-draft { background: #e0e0e0; color: #616161; }
-    .status-picking { background: #bbdefb; color: #1565c0; }
-    .status-packing { background: #ffe0b2; color: #e65100; }
-    .status-shipped { background: #c8e6c9; color: #2e7d32; }
-    .status-cancelled { background: #ffcdd2; color: #c62828; }
+    .status-badge { display: inline-block; font-size: 13px; font-weight: 500; }
+    .status-draft { color: #616161; }
+    .status-picking { color: #1565c0; }
+    .status-packing { color: #e65100; }
+    .status-shipped { color: #2e7d32; }
+    .status-cancelled { color: #c62828; }
   `],
 })
 export class ShippingComponent implements OnInit {
