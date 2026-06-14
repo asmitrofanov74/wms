@@ -11,6 +11,17 @@ describe('LoginComponent', () => {
   let auth: jasmine.SpyObj<AuthService>;
   let router: jasmine.SpyObj<Router>;
 
+  const mockUser = {
+    id: '1',
+    email: 'admin@wms.com',
+    firstName: 'Admin',
+    lastName: 'User',
+    isActive: true,
+    roles: ['Admin'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   beforeEach(async () => {
     const authSpy = jasmine.createSpyObj('AuthService', ['login', 'register']);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -50,7 +61,7 @@ describe('LoginComponent', () => {
   it('should navigate to dashboard on successful login', () => {
     component.email = 'admin@wms.com';
     component.password = 'password123';
-    auth.login.and.returnValue(of({ accessToken: 'at', refreshToken: 'rt', expiresIn: 900 }));
+    auth.login.and.returnValue(of(mockUser));
 
     component.onSubmit();
 
@@ -72,7 +83,7 @@ describe('LoginComponent', () => {
     component.firstName = 'New';
     component.lastName = 'User';
     component.confirmPassword = 'password123';
-    auth.register.and.returnValue(of({ accessToken: 'at', refreshToken: 'rt', expiresIn: 900 }));
+    auth.register.and.returnValue(of(mockUser));
 
     component.onRegister();
 

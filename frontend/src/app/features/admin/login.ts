@@ -41,77 +41,86 @@ import { AuthService } from '../../core/auth/auth.service';
           </button>
         </div>
 
-        @if (mode() === 'login') {
-          <form #loginForm="ngForm" (ngSubmit)="onSubmit()" class="auth-form">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" name="email" [(ngModel)]="email" required autocomplete="email">
-              <mat-icon matSuffix>email</mat-icon>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Password</mat-label>
-              <input matInput type="password" name="password" [(ngModel)]="password" required autocomplete="current-password">
-              <mat-icon matSuffix>lock</mat-icon>
-            </mat-form-field>
-
-            @if (error) {
-              <div class="error-message">{{ error }}</div>
-            }
-
-            <button mat-raised-button color="primary" type="submit" [disabled]="loading" class="full-width submit-btn">
-              @if (loading) {
-                <mat-spinner diameter="20"></mat-spinner>
-              } @else {
-                Sign In
-              }
-            </button>
-          </form>
-        } @else {
-          <form #registerForm="ngForm" (ngSubmit)="onRegister()" class="auth-form">
-            <div class="name-row">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>First Name</mat-label>
-                <input matInput name="firstName" [(ngModel)]="firstName" required>
-                <mat-icon matSuffix>person</mat-icon>
-              </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Last Name</mat-label>
-                <input matInput name="lastName" [(ngModel)]="lastName" required>
-              </mat-form-field>
+        <div class="form-wrapper">
+          @if (loading) {
+            <div class="loading-overlay">
+              <mat-spinner diameter="40"></mat-spinner>
+              <span class="loading-text">{{ mode() === 'login' ? 'Signing in...' : 'Creating account...' }}</span>
             </div>
+          }
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" name="regEmail" [(ngModel)]="email" required autocomplete="email">
-              <mat-icon matSuffix>email</mat-icon>
-            </mat-form-field>
+          @if (mode() === 'login') {
+            <form #loginForm="ngForm" (ngSubmit)="onSubmit()" class="auth-form">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" name="email" [(ngModel)]="email" required autocomplete="email" [disabled]="loading">
+                <mat-icon matSuffix>email</mat-icon>
+              </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Password</mat-label>
-              <input matInput type="password" name="regPassword" [(ngModel)]="password" required minlength="6" autocomplete="new-password">
-              <mat-icon matSuffix>lock</mat-icon>
-            </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Password</mat-label>
+                <input matInput type="password" name="password" [(ngModel)]="password" required autocomplete="current-password" [disabled]="loading">
+                <mat-icon matSuffix>lock</mat-icon>
+              </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Confirm Password</mat-label>
-              <input matInput type="password" name="confirmPassword" [(ngModel)]="confirmPassword" required autocomplete="new-password">
-              <mat-icon matSuffix>lock</mat-icon>
-            </mat-form-field>
-
-            @if (error) {
-              <div class="error-message">{{ error }}</div>
-            }
-
-            <button mat-raised-button color="primary" type="submit" [disabled]="loading" class="full-width submit-btn">
-              @if (loading) {
-                <mat-spinner diameter="20"></mat-spinner>
-              } @else {
-                Create Account
+              @if (error) {
+                <div class="error-message">{{ error }}</div>
               }
-            </button>
-          </form>
-        }
+
+              <button mat-raised-button color="primary" type="submit" [disabled]="loading" class="full-width submit-btn">
+                @if (loading) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Sign In
+                }
+              </button>
+            </form>
+          } @else {
+            <form #registerForm="ngForm" (ngSubmit)="onRegister()" class="auth-form">
+              <div class="name-row">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>First Name</mat-label>
+                  <input matInput name="firstName" [(ngModel)]="firstName" required [disabled]="loading">
+                  <mat-icon matSuffix>person</mat-icon>
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Last Name</mat-label>
+                  <input matInput name="lastName" [(ngModel)]="lastName" required [disabled]="loading">
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" name="regEmail" [(ngModel)]="email" required autocomplete="email" [disabled]="loading">
+                <mat-icon matSuffix>email</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Password</mat-label>
+                <input matInput type="password" name="regPassword" [(ngModel)]="password" required minlength="6" autocomplete="new-password" [disabled]="loading">
+                <mat-icon matSuffix>lock</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Confirm Password</mat-label>
+                <input matInput type="password" name="confirmPassword" [(ngModel)]="confirmPassword" required autocomplete="new-password" [disabled]="loading">
+                <mat-icon matSuffix>lock</mat-icon>
+              </mat-form-field>
+
+              @if (error) {
+                <div class="error-message">{{ error }}</div>
+              }
+
+              <button mat-raised-button color="primary" type="submit" [disabled]="loading" class="full-width submit-btn">
+                @if (loading) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Create Account
+                }
+              </button>
+            </form>
+          }
+        </div>
       </div>
     </div>
   `,
@@ -199,7 +208,6 @@ import { AuthService } from '../../core/auth/auth.service';
     }
     .name-row mat-form-field { flex: 1; }
     .full-width { width: 100%; }
-    ::ng-deep .mat-mdc-form-field { --mat-form-field-outlined-container-shape: 16px; }
     .submit-btn {
       margin-top: 4px;
       padding: 10px;
@@ -223,6 +231,27 @@ import { AuthService } from '../../core/auth/auth.service';
       padding: 10px;
       background: #ffebee;
       border-radius: 8px;
+    }
+    .form-wrapper {
+      position: relative;
+    }
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      background: rgba(255,255,255,0.85);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 200px;
+    }
+    .loading-text {
+      color: #3949ab;
+      font-size: 15px;
+      font-weight: 500;
     }
   `],
 })

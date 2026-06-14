@@ -23,3 +23,7 @@ html, body {
 .full-width {
   width: 100%;
 }
+
+.mat-mdc-form-field {
+  --mat-form-field-outlined-container-shape: 16px;
+}
