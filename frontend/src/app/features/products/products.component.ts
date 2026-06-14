@@ -421,10 +421,14 @@ export class ProductFormDialog implements OnInit {
   save(): void {
     this.saving.set(true);
     this.error.set('');
-    const dto: any = { ...this.form };
+    let dto: any = { ...this.form };
     if (!dto.categoryId) dto.categoryId = undefined;
     if (!dto.unitWeight) dto.unitWeight = undefined;
     if (!dto.unitVolume) dto.unitVolume = undefined;
+    if (this.data.product) {
+      const { sku, ...rest } = dto;
+      dto = rest;
+    }
     const obs = this.data.product
       ? this.service.updateProduct(this.data.product.id, dto)
       : this.service.createProduct(dto);
