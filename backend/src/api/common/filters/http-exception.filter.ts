@@ -39,7 +39,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         }
       }
     } else {
-      this.logger.error('Unhandled exception', exception instanceof Error ? exception.stack : String(exception));
+      const error = exception instanceof Error ? exception : new Error(String(exception));
+      this.logger.error('Unhandled exception', error.stack);
+      message = error.message;
+      errors = [error.stack || error.message];
     }
 
     response.status(status).json(ApiResponse.error(message, errors));
