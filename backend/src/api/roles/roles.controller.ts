@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../common/guards/roles.guard';
 import { Role } from '../../domain/auth/role.entity';
@@ -63,9 +63,7 @@ export class RolesController {
     role.isSystem = false;
 
     if (dto.permissionIds?.length) {
-      role.permissions = await this.permissionRepository.findByIds(
-        dto.permissionIds,
-      );
+      role.permissions = await this.permissionRepository.find({ where: { id: In(dto.permissionIds) } });
     }
 
     const saved = await this.roleRepository.save(role);
@@ -133,9 +131,7 @@ export class RolesController {
   ): Promise<void> {
     const role = await this.roleRepository.findOne({ where: { id } });
     if (!role) throw new NotFoundException('Role not found');
-    role.permissions = await this.permissionRepository.findByIds(
-      body.permissionIds,
-    );
+    role.permissions = await this.permissionRepository.find({ where: { id: In(body.permissionIds) } });
     await this.roleRepository.save(role);
   }
 

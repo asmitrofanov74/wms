@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, In } from 'typeorm';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../common/guards/roles.guard';
 import { ShippingOrder, ShippingOrderStatus } from '../../domain/shipping/shipping-order.entity';
@@ -257,7 +257,7 @@ export class ShippingController {
   private async toResponseDto(order: ShippingOrder): Promise<ShippingOrderResponseDto> {
     const productIds = order.lines.map((l) => l.productId);
     const products = productIds.length
-      ? await this.productRepository.findByIds(productIds)
+      ? await this.productRepository.find({ where: { id: In(productIds) } })
       : [];
     const productMap = new Map(products.map((p) => [p.id, p]));
 

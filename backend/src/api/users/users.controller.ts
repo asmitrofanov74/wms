@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../common/guards/roles.guard';
 import { IUserRepository } from '../../domain/auth/user.repository.interface';
@@ -54,7 +54,7 @@ export class UsersController {
     user.lastName = dto.lastName;
     user.isActive = true;
     if (dto.roleIds?.length) {
-      user.roles = await this.roleRepository.findByIds(dto.roleIds);
+      user.roles = await this.roleRepository.find({ where: { id: In(dto.roleIds) } });
     }
     const saved = await this.userRepository.save(user);
     return this.toResponseDto(saved);
@@ -83,7 +83,7 @@ export class UsersController {
     if (dto.lastName) user.lastName = dto.lastName;
     if (dto.isActive !== undefined) user.isActive = dto.isActive;
     if (dto.roleIds) {
-      user.roles = await this.roleRepository.findByIds(dto.roleIds);
+      user.roles = await this.roleRepository.find({ where: { id: In(dto.roleIds) } });
     }
     const saved = await this.userRepository.save(user);
     return this.toResponseDto(saved);

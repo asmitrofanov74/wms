@@ -97,38 +97,72 @@ import { ShippingOrder, Product } from '../../shared/models/api-response';
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
           <td mat-cell *matCellDef="let o">{{ o.createdAt | date:'short' }}</td>
         </ng-container>
-        <ng-container matColumnDef="actions">
+        <ng-container matColumnDef="actionEdit">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let o">
             @if (o.status === 'draft') {
               <button mat-icon-button (click)="openEditDialog(o)" matTooltip="Edit">
                 <mat-icon>edit</mat-icon>
               </button>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actionPlay">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let o">
+            @if (o.status === 'draft') {
               <button mat-icon-button (click)="startPicking(o)" matTooltip="Start Picking" style="color:#1976d2">
                 <mat-icon>play_arrow</mat-icon>
               </button>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actionCancel">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let o">
+            @if (o.status === 'draft' || o.status === 'picking' || o.status === 'packing') {
               <button mat-icon-button (click)="cancelOrder(o)" matTooltip="Cancel" style="color:#f44336">
                 <mat-icon>cancel</mat-icon>
               </button>
-            } @else if (o.status === 'picking') {
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actionPick">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let o">
+            @if (o.status === 'picking') {
               <button mat-icon-button (click)="openPickDialog(o)" matTooltip="Pick Items" style="color:#1976d2">
                 <mat-icon>inventory_2</mat-icon>
               </button>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actionMoveToInbox">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let o">
+            @if (o.status === 'picking') {
               <button mat-icon-button (click)="startPacking(o)" matTooltip="Start Packing" style="color:#ff9800">
                 <mat-icon>move_to_inbox</mat-icon>
               </button>
-              <button mat-icon-button (click)="cancelOrder(o)" matTooltip="Cancel" style="color:#f44336">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            } @else if (o.status === 'packing') {
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actionPack">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let o">
+            @if (o.status === 'packing') {
               <button mat-icon-button (click)="openPackDialog(o)" matTooltip="Pack Items" style="color:#ff9800">
                 <mat-icon>inventory</mat-icon>
               </button>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actionShip">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let o">
+            @if (o.status === 'packing') {
               <button mat-icon-button (click)="shipOrder(o)" matTooltip="Ship" style="color:#4caf50">
                 <mat-icon>local_shipping</mat-icon>
-              </button>
-              <button mat-icon-button (click)="cancelOrder(o)" matTooltip="Cancel" style="color:#f44336">
-                <mat-icon>cancel</mat-icon>
               </button>
             }
           </td>
@@ -156,7 +190,13 @@ import { ShippingOrder, Product } from '../../shared/models/api-response';
     table { width: 100%; }
     td code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
     .no-data-row td { text-align: center; padding: 32px; color: #999; font-style: italic; }
-    .mat-column-actions { width: 160px; text-align: right; }
+    .mat-column-actionEdit { width: 48px; text-align: center; }
+    .mat-column-actionPlay { width: 48px; text-align: center; }
+    .mat-column-actionCancel { width: 48px; text-align: center; }
+    .mat-column-actionPick { width: 48px; text-align: center; }
+    .mat-column-actionMoveToInbox { width: 48px; text-align: center; }
+    .mat-column-actionPack { width: 48px; text-align: center; }
+    .mat-column-actionShip { width: 48px; text-align: center; }
     .mat-column-status { width: 100px; }
     .mat-column-lines { width: 70px; text-align: center; }
     .mat-column-progress { width: 90px; text-align: center; }
@@ -177,7 +217,7 @@ export class ShippingComponent implements OnInit {
   search = '';
   statusFilter = '';
 
-  columns = ['orderNumber', 'customer', 'status', 'lines', 'progress', 'createdAt', 'actions'];
+  columns = ['orderNumber', 'customer', 'status', 'lines', 'progress', 'createdAt', 'actionEdit', 'actionPlay', 'actionCancel', 'actionPick', 'actionMoveToInbox', 'actionPack', 'actionShip'];
   dataSource = new MatTableDataSource<ShippingOrder>([]);
 
   @ViewChild(MatSort) sort!: MatSort;

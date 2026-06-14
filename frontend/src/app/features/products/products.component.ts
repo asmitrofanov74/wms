@@ -99,15 +99,25 @@ import { Product, Category } from '../../shared/models/api-response';
                 </button>
               </td>
             </ng-container>
-            <ng-container matColumnDef="actions">
+            <ng-container matColumnDef="actionUom">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let p">
                 <button mat-icon-button (click)="openProductUomDialog(p)" matTooltip="Manage UOMs & Barcodes">
                   <mat-icon>qr_code_scanner</mat-icon>
                 </button>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionEdit">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let p">
                 <button mat-icon-button (click)="openProductDialog(p)" matTooltip="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionDelete">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let p">
                 <button mat-icon-button (click)="deleteProduct(p)" matTooltip="Delete">
                   <mat-icon>delete</mat-icon>
                 </button>
@@ -154,12 +164,17 @@ import { Product, Category } from '../../shared/models/api-response';
                 </mat-icon>
               </td>
             </ng-container>
-            <ng-container matColumnDef="catActions">
+            <ng-container matColumnDef="actionEdit">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let c">
                 <button mat-icon-button (click)="openCategoryDialog(c)" matTooltip="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionDelete">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let c">
                 <button mat-icon-button (click)="deleteCategory(c)" matTooltip="Delete">
                   <mat-icon>delete</mat-icon>
                 </button>
@@ -183,8 +198,6 @@ import { Product, Category } from '../../shared/models/api-response';
     .loading-shade { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.7); z-index: 1; }
     table { width: 100%; }
     td code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-    .mat-column-actions { width: 120px; text-align: right; }
-    .mat-column-catActions { width: 100px; text-align: right; }
     .mat-column-isActive { width: 80px; text-align: center; }
     .mat-column-isTracked { width: 80px; text-align: center; }
     .mat-column-unitWeight, .mat-column-unitVolume { width: 80px; text-align: right; }
@@ -204,8 +217,8 @@ export class ProductsComponent implements OnInit {
 
   productSearch = '';
   selectedCategoryId = '';
-  productColumns = ['sku', 'name', 'categoryName', 'unitWeight', 'unitVolume', 'isTracked', 'isActive', 'actions'];
-  categoryColumns = ['code', 'name', 'path', 'isActive', 'catActions'];
+  productColumns = ['sku', 'name', 'categoryName', 'unitWeight', 'unitVolume', 'isTracked', 'isActive', 'actionUom', 'actionEdit', 'actionDelete'];
+  categoryColumns = ['code', 'name', 'path', 'isActive', 'actionEdit', 'actionDelete'];
 
   productDataSource = new MatTableDataSource<Product>([]);
   categoryDataSource = new MatTableDataSource<Category>([]);
@@ -346,14 +359,23 @@ export class ProductsComponent implements OnInit {
         <mat-form-field appearance="outline">
           <mat-label>SKU</mat-label>
           <input matInput [(ngModel)]="form.sku" required maxlength="50" [disabled]="!!data.product">
+          @if (fieldErrors()['sku']; as errors) {
+            <mat-error>{{ errors.join('; ') }}</mat-error>
+          }
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Name</mat-label>
           <input matInput [(ngModel)]="form.name" required maxlength="200">
+          @if (fieldErrors()['name']; as errors) {
+            <mat-error>{{ errors.join('; ') }}</mat-error>
+          }
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Description</mat-label>
           <textarea matInput [(ngModel)]="form.description" rows="2"></textarea>
+          @if (fieldErrors()['description']; as errors) {
+            <mat-error>{{ errors.join('; ') }}</mat-error>
+          }
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Category</mat-label>
@@ -363,15 +385,24 @@ export class ProductsComponent implements OnInit {
               <mat-option [value]="c.id">{{ c.code }} - {{ c.name }}</mat-option>
             }
           </mat-select>
+          @if (fieldErrors()['categoryId']; as errors) {
+            <mat-error>{{ errors.join('; ') }}</mat-error>
+          }
         </mat-form-field>
         <div class="row">
           <mat-form-field appearance="outline">
             <mat-label>Unit Weight</mat-label>
             <input matInput type="number" [(ngModel)]="form.unitWeight">
+            @if (fieldErrors()['unitWeight']; as errors) {
+              <mat-error>{{ errors.join('; ') }}</mat-error>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Unit Volume</mat-label>
             <input matInput type="number" [(ngModel)]="form.unitVolume">
+            @if (fieldErrors()['unitVolume']; as errors) {
+              <mat-error>{{ errors.join('; ') }}</mat-error>
+            }
           </mat-form-field>
         </div>
         <mat-slide-toggle [(ngModel)]="form.isTracked">Track Inventory</mat-slide-toggle>
@@ -382,7 +413,7 @@ export class ProductsComponent implements OnInit {
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close [disabled]="saving()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !form.sku || !form.name">
+      <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !form.sku || !form.name || (!data.product && (form.unitWeight === null || form.unitVolume === null))">
         @if (saving()) { <mat-spinner diameter="20"/> }
         {{ data.product ? 'Update' : 'Create' }}
       </button>
@@ -404,6 +435,7 @@ export class ProductFormDialog implements OnInit {
 
   saving = signal(false);
   error = signal('');
+  fieldErrors = signal<Record<string, string[]>>({});
   form = { sku: '', name: '', description: '', categoryId: '', unitWeight: null as number | null, unitVolume: null as number | null, isTracked: true };
 
   ngOnInit(): void {
@@ -412,8 +444,8 @@ export class ProductFormDialog implements OnInit {
       this.form.name = this.data.product.name;
       this.form.description = this.data.product.description;
       this.form.categoryId = this.data.product.categoryId || '';
-      this.form.unitWeight = this.data.product.unitWeight || null;
-      this.form.unitVolume = this.data.product.unitVolume || null;
+      this.form.unitWeight = this.data.product.unitWeight ?? null;
+      this.form.unitVolume = this.data.product.unitVolume ?? null;
       this.form.isTracked = this.data.product.isTracked;
     }
   }
@@ -421,26 +453,31 @@ export class ProductFormDialog implements OnInit {
   save(): void {
     this.saving.set(true);
     this.error.set('');
-    let dto: any = { ...this.form };
-    if (!dto.categoryId) dto.categoryId = undefined;
-    if (!dto.unitWeight) dto.unitWeight = undefined;
-    if (!dto.unitVolume) dto.unitVolume = undefined;
-    if (this.data.product) {
-      const { sku, ...rest } = dto;
-      dto = rest;
+    this.fieldErrors.set({});
+    let dto: Record<string, any> = {};
+    const { sku, ...formFields } = this.form;
+    const source = this.data.product ? formFields : this.form;
+    for (const [k, v] of Object.entries(source)) {
+      if (v !== null && v !== undefined) dto[k] = v;
     }
+    if (dto['categoryId'] === '') delete dto['categoryId'];
     const obs = this.data.product
-      ? this.service.updateProduct(this.data.product.id, dto)
-      : this.service.createProduct(dto);
+      ? this.service.updateProduct(this.data.product.id, dto as any)
+      : this.service.createProduct(dto as any);
     obs.subscribe({
       next: () => {
         this.snackBar.open(`Product ${this.data.product ? 'updated' : 'created'}`, 'Close', { duration: 3000 });
         this.dialogRef.close(true);
       },
       error: (err) => {
-        const msg = err.error?.message || err.statusText || 'Error';
-        const details = err.error?.details || err.error?.error;
-        this.error.set(details ? `${msg}: ${JSON.stringify(details)}` : msg);
+        const body = err.error;
+        if (body?.errors && typeof body.errors === 'object' && !Array.isArray(body.errors)) {
+          this.fieldErrors.set(body.errors as Record<string, string[]>);
+        } else {
+          const msg = body?.message || err.statusText || 'Error';
+          const details = body?.details || body?.error || (Array.isArray(body?.errors) ? body.errors : undefined);
+          this.error.set(details ? `${msg}: ${Array.isArray(details) ? details.join('; ') : JSON.stringify(details)}` : msg);
+        }
         this.saving.set(false);
       },
     });

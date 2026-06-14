@@ -32,17 +32,15 @@ export class CreateProductDto {
   @IsOptional()
   categoryId?: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsNumber()
   @Min(0)
-  @IsOptional()
-  unitWeight?: number;
+  unitWeight: number;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsNumber()
   @Min(0)
-  @IsOptional()
-  unitVolume?: number;
+  unitVolume: number;
 
   @ApiPropertyOptional()
   @IsBoolean()

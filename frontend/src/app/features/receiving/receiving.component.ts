@@ -96,32 +96,56 @@ import { ReceivingOrder, Product } from '../../shared/models/api-response';
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
           <td mat-cell *matCellDef="let o">{{ o.createdAt | date:'short' }}</td>
         </ng-container>
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let o">
-            @if (o.status === 'draft') {
-              <button mat-icon-button (click)="openEditDialog(o)" matTooltip="Edit">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button (click)="startReceiving(o)" matTooltip="Start Receiving" style="color:#1976d2">
-                <mat-icon>play_arrow</mat-icon>
-              </button>
-              <button mat-icon-button (click)="cancelOrder(o)" matTooltip="Cancel" style="color:#f44336">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            } @else if (o.status === 'in-progress') {
-              <button mat-icon-button (click)="openReceiveDialog(o)" matTooltip="Receive Items" style="color:#1976d2">
-                <mat-icon>inventory_2</mat-icon>
-              </button>
-              <button mat-icon-button (click)="completeOrder(o)" matTooltip="Complete" style="color:#4caf50">
-                <mat-icon>check_circle</mat-icon>
-              </button>
-              <button mat-icon-button (click)="cancelOrder(o)" matTooltip="Cancel" style="color:#f44336">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            }
-          </td>
-        </ng-container>
+            <ng-container matColumnDef="actionEdit">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let o">
+                @if (o.status === 'draft') {
+                  <button mat-icon-button (click)="openEditDialog(o)" matTooltip="Edit">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionPlay">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let o">
+                @if (o.status === 'draft') {
+                  <button mat-icon-button (click)="startReceiving(o)" matTooltip="Start Receiving" style="color:#1976d2">
+                    <mat-icon>play_arrow</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionCancel">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let o">
+                @if (o.status === 'draft' || o.status === 'in-progress') {
+                  <button mat-icon-button (click)="cancelOrder(o)" matTooltip="Cancel" style="color:#f44336">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionReceive">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let o">
+                @if (o.status === 'in-progress') {
+                  <button mat-icon-button (click)="openReceiveDialog(o)" matTooltip="Receive Items" style="color:#1976d2">
+                    <mat-icon>inventory_2</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionComplete">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let o">
+                @if (o.status === 'in-progress') {
+                  <button mat-icon-button (click)="completeOrder(o)" matTooltip="Complete" style="color:#4caf50">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                }
+              </td>
+            </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="columns"></tr>
         <tr mat-row *matRowDef="let row; columns: columns;"></tr>
@@ -145,7 +169,11 @@ import { ReceivingOrder, Product } from '../../shared/models/api-response';
     table { width: 100%; }
     td code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
     .no-data-row td { text-align: center; padding: 32px; color: #999; font-style: italic; }
-    .mat-column-actions { width: 140px; text-align: right; }
+    .mat-column-actionEdit { width: 48px; text-align: center; }
+    .mat-column-actionPlay { width: 48px; text-align: center; }
+    .mat-column-actionCancel { width: 48px; text-align: center; }
+    .mat-column-actionReceive { width: 48px; text-align: center; }
+    .mat-column-actionComplete { width: 48px; text-align: center; }
     .mat-column-status { width: 130px; }
     .mat-column-lines { width: 70px; text-align: center; }
     .mat-column-progress { width: 90px; text-align: center; }
@@ -165,7 +193,7 @@ export class ReceivingComponent implements OnInit {
   search = '';
   statusFilter = '';
 
-  columns = ['orderNumber', 'supplier', 'status', 'lines', 'progress', 'createdAt', 'actions'];
+  columns = ['orderNumber', 'supplier', 'status', 'lines', 'progress', 'createdAt', 'actionEdit', 'actionPlay', 'actionCancel', 'actionReceive', 'actionComplete'];
   dataSource = new MatTableDataSource<ReceivingOrder>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -414,8 +442,10 @@ export class ReceivingFormDialog implements OnInit {
     );
   }
 
-  displayProduct(p: Product): string {
-    return p ? `${p.sku} - ${p.name}` : '';
+  displayProduct(p: any): string {
+    if (!p) return '';
+    if (typeof p === 'string') return p;
+    return `${p.sku} - ${p.name}`;
   }
 
   onSearchChange(i: number, value: string | Product): void {

@@ -80,12 +80,17 @@ import { Warehouse, Zone, Location } from '../../shared/models/api-response';
             </mat-icon>
           </td>
         </ng-container>
-        <ng-container matColumnDef="actions">
+        <ng-container matColumnDef="actionEdit">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let w">
             <button mat-icon-button (click)="openWarehouseDialog(w); $event.stopPropagation()" matTooltip="Edit">
               <mat-icon>edit</mat-icon>
             </button>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actionToggle">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let w">
             <button mat-icon-button (click)="toggleWarehouse(w); $event.stopPropagation()" [matTooltip]="w.isActive ? 'Deactivate' : 'Activate'">
               <mat-icon>toggle_on</mat-icon>
             </button>
@@ -169,18 +174,22 @@ import { Warehouse, Zone, Location } from '../../shared/models/api-response';
                               </mat-icon>
                             </td>
                           </ng-container>
-                          <ng-container matColumnDef="locActions">
+                          <ng-container matColumnDef="locEdit">
                             <th mat-header-cell *matHeaderCellDef></th>
                             <td mat-cell *matCellDef="let l">
                               <button mat-icon-button (click)="openLocationDialog(w.id, zone.id, l)" matTooltip="Edit">
                                 <mat-icon>edit</mat-icon>
                               </button>
+                            </td>
+                          </ng-container>
+                          <ng-container matColumnDef="locDelete">
+                            <th mat-header-cell *matHeaderCellDef></th>
+                            <td mat-cell *matCellDef="let l">
                               <button mat-icon-button (click)="deleteLocation(l)" matTooltip="Delete">
                                 <mat-icon>delete</mat-icon>
                               </button>
                             </td>
                           </ng-container>
-
                           <tr mat-header-row *matHeaderRowDef="locationColumns"></tr>
                           <tr mat-row *matRowDef="let row; columns: locationColumns;"></tr>
                           @if (locations().length === 0) {
@@ -238,10 +247,10 @@ import { Warehouse, Zone, Location } from '../../shared/models/api-response';
     .locations-table th { font-size: 12px; font-weight: 600; color: #666; }
     .no-data-row td { text-align: center; padding: 16px; color: #999; font-style: italic; }
     .empty-state { text-align: center; padding: 24px; color: #999; }
-    .mat-column-actions { width: 100px; text-align: right; }
+    .mat-column-actionEdit { width: 48px; text-align: center; }
+    .mat-column-actionToggle { width: 48px; text-align: center; }
     .mat-column-isActive { width: 60px; text-align: center; }
     .mat-column-pickable { width: 60px; text-align: center; }
-    .mat-column-locActions { width: 80px; text-align: right; }
   `],
 })
 export class WarehousesComponent implements OnInit {
@@ -261,8 +270,8 @@ export class WarehousesComponent implements OnInit {
   zones = signal<Zone[]>([]);
   locations = signal<Location[]>([]);
 
-  columns = ['code', 'name', 'address', 'isActive', 'actions'];
-  locationColumns = ['code', 'type', 'aisle', 'rack', 'shelf', 'pickable', 'locActions'];
+  columns = ['code', 'name', 'address', 'isActive', 'actionEdit', 'actionToggle'];
+  locationColumns = ['code', 'type', 'aisle', 'rack', 'shelf', 'pickable', 'locEdit', 'locDelete'];
 
   dataSource = new MatTableDataSource<Warehouse>([]);
 

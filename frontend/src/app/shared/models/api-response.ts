@@ -1,8 +1,10 @@
+export type FieldErrors = Record<string, string[]>;
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   message?: string;
-  errors?: string[];
+  errors?: string[] | FieldErrors;
   timestamp: string;
 }
 
@@ -191,8 +193,8 @@ export interface CreateProductRequest {
   name: string;
   description?: string;
   categoryId?: string;
-  unitWeight?: number;
-  unitVolume?: number;
+  unitWeight: number;
+  unitVolume: number;
   isTracked?: boolean;
 }
 

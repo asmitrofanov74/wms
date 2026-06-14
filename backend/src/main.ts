@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType, BadRequestException } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './api/common/filters/http-exception.filter';
@@ -25,6 +26,26 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const fieldErrors: Record<string, string[]> = {};
+        for (const err of errors) {
+          if (err.constraints) {
+            fieldErrors[err.property] = Object.values(err.constraints);
+          }
+          if (err.children?.length) {
+            for (const child of err.children) {
+              if (child.constraints) {
+                const key = `${err.property}.${child.property}`;
+                fieldErrors[key] = Object.values(child.constraints);
+              }
+            }
+          }
+        }
+        return new BadRequestException({
+          message: 'Validation failed',
+          errors: fieldErrors,
+        });
+      },
     }),
   );
 

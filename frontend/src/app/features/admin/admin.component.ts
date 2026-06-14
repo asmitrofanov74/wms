@@ -86,12 +86,17 @@ import { RoleFormDialog } from './role-form.dialog';
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
               <td mat-cell *matCellDef="let u">{{ u.createdAt | date:'short' }}</td>
             </ng-container>
-            <ng-container matColumnDef="actions">
+            <ng-container matColumnDef="actionEdit">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let u">
                 <button mat-icon-button (click)="openUserDialog(u)" matTooltip="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionDelete">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let u">
                 <button mat-icon-button (click)="deleteUser(u)" [disabled]="u.email === 'admin@wms.com'" matTooltip="Delete">
                   <mat-icon>delete</mat-icon>
                 </button>
@@ -138,12 +143,17 @@ import { RoleFormDialog } from './role-form.dialog';
                 </mat-icon>
               </td>
             </ng-container>
-            <ng-container matColumnDef="actions">
+            <ng-container matColumnDef="actionEdit">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let r">
                 <button mat-icon-button (click)="openRoleDialog(r)" matTooltip="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actionDelete">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let r">
                 <button mat-icon-button (click)="deleteRole(r)" [disabled]="r.isSystem" matTooltip="Delete">
                   <mat-icon>delete</mat-icon>
                 </button>
@@ -166,7 +176,8 @@ import { RoleFormDialog } from './role-form.dialog';
     .table-container { position: relative; }
     .loading-shade { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.7); z-index: 1; }
     table { width: 100%; }
-    .mat-column-actions { width: 100px; text-align: right; }
+    .mat-column-actionEdit { width: 48px; text-align: center; }
+    .mat-column-actionDelete { width: 48px; text-align: center; }
     .mat-column-isActive { width: 80px; text-align: center; }
     .mat-column-isSystem { width: 80px; text-align: center; }
     .mat-column-permissions { width: 140px; }
@@ -184,8 +195,8 @@ export class AdminComponent implements OnInit {
   roles = signal<Role[]>([]);
 
   userSearch = '';
-  userColumns = ['email', 'name', 'roles', 'isActive', 'createdAt', 'actions'];
-  roleColumns = ['name', 'description', 'permissions', 'isSystem', 'actions'];
+  userColumns = ['email', 'name', 'roles', 'isActive', 'createdAt', 'actionEdit', 'actionDelete'];
+  roleColumns = ['name', 'description', 'permissions', 'isSystem', 'actionEdit', 'actionDelete'];
 
   userDataSource = new MatTableDataSource<User>([]);
   roleDataSource = new MatTableDataSource<Role>([]);

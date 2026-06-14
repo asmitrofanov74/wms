@@ -25,6 +25,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       database: this.configService.get<string>('DB_NAME', 'wms'),
       username: this.configService.get<string>('DB_USER', 'wms'),
       password: this.configService.get<string>('DB_PASSWORD', 'wms_secret'),
+      autoLoadEntities: true,
       entities: [
         User, Role, Permission, RefreshToken,
         Warehouse, WarehouseZone, BinLocation,

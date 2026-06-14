@@ -62,3 +62,7 @@ html, body {
   background: white;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
+
+.mat-mdc-tooltip-panel-above {
+  translate: 0 10px;
+}
