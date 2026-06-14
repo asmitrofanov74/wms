@@ -177,11 +177,11 @@ import { ReceivingOrder, Product } from '../../shared/models/api-response';
     .mat-column-status { width: 130px; }
     .mat-column-lines { width: 70px; text-align: center; }
     .mat-column-progress { width: 90px; text-align: center; }
-    .status-badge { display: inline-block; font-size: 13px; font-weight: 500; }
-    .status-draft { color: #616161; }
-    .status-progress { color: #1565c0; }
-    .status-completed { color: #2e7d32; }
-    .status-cancelled { color: #c62828; }
+    .status-badge { display: inline-block; font-size: 13px; font-weight: 500; background: none !important; }
+    .status-draft { color: #616161; background: none !important; }
+    .status-progress { color: #1565c0; background: none !important; }
+    .status-completed { color: #2e7d32; background: none !important; }
+    .status-cancelled { color: #c62828; background: none !important; }
   `],
 })
 export class ReceivingComponent implements OnInit {
