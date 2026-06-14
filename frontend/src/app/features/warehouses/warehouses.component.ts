@@ -213,10 +213,11 @@ import { Warehouse, Zone, Location } from '../../shared/models/api-response';
     </div>
   `,
   styles: [`
+    :host { display: flex; flex-direction: column; flex: 1; min-height: 0; }
     .page-header h1 { margin: 0 0 16px; font-size: 28px; font-weight: 500; }
     .tab-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 16px 0; }
     .tab-toolbar mat-form-field { width: 320px; }
-    .table-container { position: relative; min-height: 200px; }
+    .table-container { position: relative; }
     .loading-shade { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.7); z-index: 1; }
     .loading { display: flex; justify-content: center; padding: 16px; }
     table { width: 100%; }

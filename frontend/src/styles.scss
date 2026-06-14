@@ -28,10 +28,31 @@ html, body {
   --mat-form-field-outlined-container-shape: 16px;
 }
 
+.table-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.table-container table {
+  flex: 1;
+  min-height: 0;
+}
+
+.mat-mdc-tab-body-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.mat-tab-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .mat-mdc-paginator-outer-container {
-  position: sticky;
-  bottom: 0;
   background: white;
-  z-index: 1;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
