@@ -9,7 +9,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -26,7 +25,7 @@ import { ShippingOrder, Product } from '../../shared/models/api-response';
     DatePipe, FormsModule,
     MatTableModule, MatSortModule, MatPaginatorModule,
     MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule,
-    MatSelectModule, MatChipsModule, MatTooltipModule, MatDialogModule,
+    MatSelectModule, MatTooltipModule, MatDialogModule,
     MatSnackBarModule, MatProgressSpinnerModule,
   ],
   template: `
@@ -74,13 +73,14 @@ import { ShippingOrder, Product } from '../../shared/models/api-response';
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
           <td mat-cell *matCellDef="let o">
-            <mat-chip [class.status-draft]="o.status === 'draft'"
-                      [class.status-picking]="o.status === 'picking'"
-                      [class.status-packing]="o.status === 'packing'"
-                      [class.status-shipped]="o.status === 'shipped'"
-                      [class.status-cancelled]="o.status === 'cancelled'">
+            <span class="status-badge"
+                  [class.status-draft]="o.status === 'draft'"
+                  [class.status-picking]="o.status === 'picking'"
+                  [class.status-packing]="o.status === 'packing'"
+                  [class.status-shipped]="o.status === 'shipped'"
+                  [class.status-cancelled]="o.status === 'cancelled'">
               {{ statusLabel(o.status) }}
-            </mat-chip>
+            </span>
           </td>
         </ng-container>
         <ng-container matColumnDef="lines">
@@ -200,11 +200,12 @@ import { ShippingOrder, Product } from '../../shared/models/api-response';
     .mat-column-status { width: 100px; }
     .mat-column-lines { width: 70px; text-align: center; }
     .mat-column-progress { width: 90px; text-align: center; }
-    .status-draft { background: #e0e0e0 !important; color: #616161 !important; }
-    .status-picking { background: #bbdefb !important; color: #1565c0 !important; }
-    .status-packing { background: #ffe0b2 !important; color: #e65100 !important; }
-    .status-shipped { background: #c8e6c9 !important; color: #2e7d32 !important; }
-    .status-cancelled { background: #ffcdd2 !important; color: #c62828 !important; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; line-height: 1; }
+    .status-draft { background: #e0e0e0; color: #616161; }
+    .status-picking { background: #bbdefb; color: #1565c0; }
+    .status-packing { background: #ffe0b2; color: #e65100; }
+    .status-shipped { background: #c8e6c9; color: #2e7d32; }
+    .status-cancelled { background: #ffcdd2; color: #c62828; }
   `],
 })
 export class ShippingComponent implements OnInit {
