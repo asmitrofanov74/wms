@@ -15,6 +15,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angu
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { ReceivingService } from './receiving.service';
 import { ProductsService } from '../products/products.service';
 import { ReceivingOrder, Product } from '../../shared/models/api-response';
@@ -275,6 +276,7 @@ export class ReceivingComponent implements OnInit {
     FormsModule,
     MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule,
     MatSelectModule, MatIconModule, MatProgressSpinnerModule, MatSnackBarModule,
+    MatAutocompleteModule,
   ],
   template: `
     <h2 mat-dialog-title>{{ data.order ? 'Edit Receiving Order' : 'New Receiving Order' }}</h2>
@@ -290,31 +292,47 @@ export class ReceivingComponent implements OnInit {
         </mat-form-field>
 
         <h3>Order Lines</h3>
+        @if (productsError()) {
+          <div class="load-error">Failed to load products. Check connection.</div>
+        }
         @for (line of form.lines; track line._id; let i = $index) {
           <div class="line-row">
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Product</mat-label>
-              <mat-select [(ngModel)]="line.productId" required (selectionChange)="onProductSelect(i)">
-                @for (p of products(); track p.id) {
-                  <mat-option [value]="p.id">{{ p.sku }} - {{ p.name }}</mat-option>
+              <input matInput [matAutocomplete]="auto" [(ngModel)]="line.searchText" [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="onSearchChange(i, $event)" placeholder="Type to search..." required>
+              <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onProductSelected(i, $event)"
+                [displayWith]="displayProduct">
+                @for (p of filteredProducts(i); track p.id) {
+                  <mat-option [value]="p">{{ p.sku }} - {{ p.name }}</mat-option>
                 }
-              </mat-select>
+              </mat-autocomplete>
+              @if (line.productId && line.searchText) {
+                <button matSuffix mat-icon-button (click)="clearProduct(i)" tabindex="-1" type="button">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
             </mat-form-field>
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Qty</mat-label>
               <input matInput type="number" min="0.001" step="any" [(ngModel)]="line.expectedQuantity" required>
             </mat-form-field>
-            <button mat-icon-button color="warn" (click)="removeLine(i)" matTooltip="Remove line">
-              <mat-icon>remove_circle</mat-icon>
-            </button>
+            @if (form.lines.length > 1) {
+              <button mat-icon-button color="warn" (click)="removeLine(i)" matTooltip="Remove line">
+                <mat-icon>remove_circle</mat-icon>
+              </button>
+            }
           </div>
         }
-        <button mat-stroked-button (click)="addLine()" [disabled]="products().length === 0">
+        <button mat-stroked-button class="add-line-btn" (click)="addLine()" [disabled]="products().length === 0">
           <mat-icon>add</mat-icon> Add Line
         </button>
 
-        @if (products().length === 0) {
+        @if (products().length === 0 && !productsError()) {
           <div class="hint">No products available. Create products first.</div>
+        }
+        @if (productsLoading()) {
+          <div class="hint">Loading products...</div>
         }
       </div>
       @if (error()) { <div class="error-msg">{{ error() }}</div> }
@@ -335,7 +353,9 @@ export class ReceivingComponent implements OnInit {
     .line-row mat-form-field:last-child { width: 120px; }
     h3 { margin: 8px 0; font-size: 16px; font-weight: 500; color: #555; }
     .error-msg { color: #f44336; font-size: 14px; margin-top: 8px; }
+    .load-error { color: #f44336; font-size: 13px; margin-bottom: 4px; }
     .hint { color: #999; font-style: italic; font-size: 13px; }
+    .add-line-btn { border-radius: 8px; }
     mat-spinner { display: inline-block; }
   `],
 })
@@ -348,39 +368,83 @@ export class ReceivingFormDialog implements OnInit {
 
   saving = signal(false);
   error = signal('');
-  productSearch = '';
   products = signal<Product[]>([]);
+  productsLoading = signal(false);
+  productsError = signal(false);
 
-  form = { supplier: '', notes: '', lines: [] as { _id: number; productId: string; expectedQuantity: number }[] };
+  form = {
+    supplier: '', notes: '',
+    lines: [] as { _id: number; productId: string; expectedQuantity: number; searchText: string }[],
+  };
   private nextId = 1;
 
   ngOnInit(): void {
+    this.productsLoading.set(true);
     this.productService.getProducts().subscribe({
-      next: (data) => this.products.set(data),
+      next: (data) => {
+        this.products.set(data);
+        this.productsLoading.set(false);
+        if (this.data.order) {
+          this.form.supplier = this.data.order.supplier;
+          this.form.notes = this.data.order.notes;
+          this.form.lines = this.data.order.lines.map((l) => {
+            const p = data.find((x) => x.id === l.productId);
+            return {
+              _id: this.nextId++,
+              productId: l.productId,
+              expectedQuantity: l.expectedQuantity,
+              searchText: p ? `${p.sku} - ${p.name}` : '',
+            };
+          });
+        } else {
+          this.addLine();
+        }
+      },
+      error: () => {
+        this.productsError.set(true);
+        this.productsLoading.set(false);
+      },
     });
+  }
 
-    if (this.data.order) {
-      this.form.supplier = this.data.order.supplier;
-      this.form.notes = this.data.order.notes;
-      this.form.lines = this.data.order.lines.map((l) => ({
-        _id: this.nextId++,
-        productId: l.productId,
-        expectedQuantity: l.expectedQuantity,
-      }));
-    } else {
-      this.addLine();
+  filteredProducts(i: number): Product[] {
+    const text = this.form.lines[i]?.searchText?.toLowerCase() || '';
+    return this.products().filter(
+      (p) => !text || p.sku.toLowerCase().includes(text) || p.name.toLowerCase().includes(text),
+    );
+  }
+
+  displayProduct(p: Product): string {
+    return p ? `${p.sku} - ${p.name}` : '';
+  }
+
+  onSearchChange(i: number, value: string | Product): void {
+    if (typeof value === 'string' && !value) {
+      this.form.lines[i].productId = '';
     }
   }
 
+  onProductSelected(i: number, event: any): void {
+    const p = event.option.value as Product;
+    this.form.lines[i].productId = p.id;
+    this.form.lines[i].searchText = `${p.sku} - ${p.name}`;
+  }
+
+  clearProduct(i: number): void {
+    this.form.lines[i].productId = '';
+    this.form.lines[i].searchText = '';
+  }
+
   addLine(): void {
-    this.form.lines = [...this.form.lines, { _id: this.nextId++, productId: '', expectedQuantity: 1 }];
+    this.form.lines = [
+      ...this.form.lines,
+      { _id: this.nextId++, productId: '', expectedQuantity: 1, searchText: '' },
+    ];
   }
 
   removeLine(index: number): void {
     this.form.lines = this.form.lines.filter((_, i) => i !== index);
   }
-
-  onProductSelect(index: number): void {}
 
   hasInvalidLines(): boolean {
     return this.form.lines.some((l) => !l.productId || !l.expectedQuantity);
