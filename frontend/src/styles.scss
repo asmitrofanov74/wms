@@ -27,3 +27,11 @@ html, body {
 .mat-mdc-form-field {
   --mat-form-field-outlined-container-shape: 16px;
 }
+
+.mat-mdc-paginator-outer-container {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 1;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
