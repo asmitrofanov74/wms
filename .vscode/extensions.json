@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "Angular.ng-template",
+    "nrwl.angular-console",
+    "esbenp.prettier-vscode",
+    "johnpapa.vscode-peacock",
+    "mikestead.dotenv"
+  ]
+}
