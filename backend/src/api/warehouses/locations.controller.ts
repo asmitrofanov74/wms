@@ -8,12 +8,17 @@ import {
   Body,
   Param,
   Query,
+  Inject,
   UseGuards,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
   NotFoundException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiConsumes } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,6 +31,7 @@ import {
   CreateLocationDto,
   LocationResponseDto,
 } from './dto/warehouse.dto';
+import { paginate, PaginatedResult } from '../../application/common/pagination/pagination.service';
 
 @ApiTags('Locations')
 @ApiBearerAuth()
@@ -37,6 +43,7 @@ export class LocationsController {
     private readonly locationRepository: Repository<BinLocation>,
     @InjectRepository(WarehouseZone)
     private readonly zoneRepository: Repository<WarehouseZone>,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   @Get()
@@ -44,29 +51,31 @@ export class LocationsController {
   @ApiQuery({ name: 'warehouseId', required: false })
   @ApiQuery({ name: 'zoneId', required: false })
   @ApiQuery({ name: 'pickable', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   async findAll(
     @Query('warehouseId') warehouseId?: string,
     @Query('zoneId') zoneId?: string,
     @Query('pickable') pickable?: string,
-  ): Promise<LocationResponseDto[]> {
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
+  ): Promise<PaginatedResult<LocationResponseDto>> {
     const where: any = {};
     if (zoneId) where.zoneId = zoneId;
     if (pickable !== undefined) where.isPickable = pickable === 'true';
 
-    const qb = this.locationRepository.createQueryBuilder('loc')
-      .leftJoinAndSelect('loc.zone', 'zone')
-      .leftJoinAndSelect('zone.warehouse', 'warehouse');
+    const result = await paginate(this.locationRepository, { page, limit }, {
+      where: Object.keys(where).length > 0 ? where : undefined,
+      relations: ['zone', 'zone.warehouse'],
+      order: { code: 'ASC' } as any,
+    });
 
     if (warehouseId) {
-      qb.andWhere('zone.warehouseId = :warehouseId', { warehouseId });
-    }
-    if (zoneId) qb.andWhere('loc.zoneId = :zoneId', { zoneId });
-    if (pickable !== undefined) {
-      qb.andWhere('loc.isPickable = :pickable', { pickable: pickable === 'true' });
+      const filtered = result.data.filter((l) => l.zone?.warehouseId === warehouseId);
+      return { data: filtered.map(this.toResponseDto), meta: result.meta };
     }
 
-    const locations = await qb.getMany();
-    return locations.map(this.toResponseDto);
+    return { data: result.data.map(this.toResponseDto), meta: result.meta };
   }
 
   @Post()
@@ -225,12 +234,18 @@ export class LocationsController {
   async findByBarcode(
     @Param('barcode') barcode: string,
   ): Promise<LocationResponseDto> {
+    const cacheKey = `location:barcode:${barcode}`;
+    const cached = await this.cacheManager.get<string>(cacheKey);
+    if (cached) return JSON.parse(cached);
+
     const location = await this.locationRepository.findOne({
       where: { barcode },
       relations: ['zone', 'zone.warehouse'],
     });
     if (!location) throw new NotFoundException('Location not found');
-    return this.toResponseDto(location);
+    const dto = this.toResponseDto(location);
+    await this.cacheManager.set(cacheKey, JSON.stringify(dto), 300);
+    return dto;
   }
 
   private toResponseDto(location: BinLocation): LocationResponseDto {

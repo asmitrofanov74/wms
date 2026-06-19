@@ -34,6 +34,12 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       migrations: [__dirname + '/../migrations/*.ts'],
       synchronize: process.env.NODE_ENV !== 'production',
       logging: this.configService.get<string>('NODE_ENV') === 'development',
+      extra: {
+        max: 100,
+        statement_timeout: 30000,
+        idle_in_transaction_session_timeout: 10000,
+        application_name: 'wms-api',
+      },
     };
   }
 }

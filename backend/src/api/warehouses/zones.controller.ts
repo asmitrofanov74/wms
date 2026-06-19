@@ -6,10 +6,13 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   NotFoundException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -20,6 +23,7 @@ import {
   CreateZoneDto,
   ZoneResponseDto,
 } from './dto/warehouse.dto';
+import { paginate, PaginatedResult } from '../../application/common/pagination/pagination.service';
 
 @ApiTags('Warehouse Zones')
 @ApiBearerAuth()
@@ -35,13 +39,18 @@ export class ZonesController {
 
   @Get()
   @ApiOperation({ summary: 'List zones in warehouse' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   async findAll(
     @Param('warehouseId') warehouseId: string,
-  ): Promise<ZoneResponseDto[]> {
-    const zones = await this.zoneRepository.find({
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
+  ): Promise<PaginatedResult<ZoneResponseDto>> {
+    const result = await paginate(this.zoneRepository, { page, limit }, {
       where: { warehouseId },
+      order: { code: 'ASC' } as any,
     });
-    return zones.map(this.toResponseDto);
+    return { data: result.data.map(this.toResponseDto), meta: result.meta };
   }
 
   @Post()

@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, Index } from 'typeorm';
 import { BaseEntity } from '../common/base.entity';
 import { ReceivingOrderLine } from './receiving-order-line.entity';
 
@@ -10,6 +10,9 @@ export enum ReceivingOrderStatus {
 }
 
 @Entity('receiving_orders')
+@Index(['status'])
+@Index(['supplier'])
+@Index(['orderNumber'])
 export class ReceivingOrder extends BaseEntity {
   @Column({ unique: true })
   orderNumber: string;

@@ -1,8 +1,10 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../common/base.entity';
 import { User } from './user.entity';
 
 @Entity('refresh_tokens')
+@Index(['userId'])
+@Index(['tokenHash'])
 export class RefreshToken extends BaseEntity {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })

@@ -1,0 +1,2 @@
+CREATE SEQUENCE IF NOT EXISTS shipping_order_seq START 1;
+CREATE SEQUENCE IF NOT EXISTS receiving_order_seq START 1;

@@ -7,11 +7,14 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   Inject,
   UseGuards,
   NotFoundException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -38,9 +41,28 @@ export class UsersController {
   @Get()
   @Roles('Admin')
   @ApiOperation({ summary: 'List all users' })
-  async findAll(): Promise<UserResponseDto[]> {
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  async findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
+  ): Promise<{ data: UserResponseDto[]; meta: { total: number; page: number; limit: number; totalPages: number; hasNextPage: boolean; hasPreviousPage: boolean } }> {
     const users = await this.userRepository.findAll();
-    return users.map(this.toResponseDto);
+    const total = users.length;
+    const totalPages = Math.ceil(total / (limit || 20));
+    const skip = ((page || 1) - 1) * (limit || 20);
+    const paged = users.slice(skip, skip + (limit || 20));
+    return {
+      data: paged.map(this.toResponseDto),
+      meta: {
+        total,
+        page: page || 1,
+        limit: limit || 20,
+        totalPages,
+        hasNextPage: (page || 1) < totalPages,
+        hasPreviousPage: (page || 1) > 1,
+      },
+    };
   }
 
   @Post()

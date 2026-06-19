@@ -8,10 +8,15 @@ import {
   Body,
   Param,
   Query,
+  Inject,
   UseGuards,
   NotFoundException,
   BadRequestException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
@@ -28,6 +33,7 @@ import {
   CreateUomDto,
   CreateBarcodeDto,
 } from './dto/product.dto';
+import { paginate, PaginatedResult } from '../../application/common/pagination/pagination.service';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -43,6 +49,7 @@ export class ProductsController {
     private readonly uomRepository: Repository<ProductUom>,
     @InjectRepository(ProductBarcode)
     private readonly barcodeRepository: Repository<ProductBarcode>,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   @Get()
@@ -50,32 +57,33 @@ export class ProductsController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'categoryId', required: false })
   @ApiQuery({ name: 'active', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   async findAll(
     @Query('search') search?: string,
     @Query('categoryId') categoryId?: string,
     @Query('active') active?: string,
-  ): Promise<ProductResponseDto[]> {
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
+  ): Promise<PaginatedResult<ProductResponseDto>> {
     const where: any = {};
     if (categoryId) where.categoryId = categoryId;
     if (active !== undefined) where.isActive = active === 'true';
 
-    let products: Product[];
     if (search) {
-      products = await this.productRepository.find({
-        where: [
-          { ...where, name: Like(`%${search}%`) },
-          { ...where, sku: Like(`%${search}%`) },
-        ],
-        relations: ['category', 'uoms', 'barcodes'],
-      });
-    } else {
-      products = await this.productRepository.find({
-        where,
-        relations: ['category', 'uoms', 'barcodes'],
-      });
+      where.name = Like(`%${search}%`);
     }
 
-    return products.map((p) => this.toResponseDto(p));
+    const result = await paginate(this.productRepository, { page, limit }, {
+      where: search ? [{ ...where, name: Like(`%${search}%`) }, { ...where, sku: Like(`%${search}%`) }] : where,
+      relations: ['category', 'uoms', 'barcodes'],
+      order: { createdAt: 'DESC' } as any,
+    });
+
+    return {
+      data: result.data.map((p) => this.toResponseDto(p)),
+      meta: result.meta,
+    };
   }
 
   @Post()
@@ -146,12 +154,18 @@ export class ProductsController {
   @Get('by-sku/:sku')
   @ApiOperation({ summary: 'Lookup product by SKU' })
   async findBySku(@Param('sku') sku: string): Promise<ProductResponseDto> {
+    const cacheKey = `product:sku:${sku}`;
+    const cached = await this.cacheManager.get<string>(cacheKey);
+    if (cached) return JSON.parse(cached);
+
     const product = await this.productRepository.findOne({
       where: { sku },
       relations: ['category', 'uoms', 'barcodes'],
     });
     if (!product) throw new NotFoundException('Product not found');
-    return this.toResponseDto(product);
+    const dto = this.toResponseDto(product);
+    await this.cacheManager.set(cacheKey, JSON.stringify(dto), 300);
+    return dto;
   }
 
   @Get('by-barcode/:barcode')
@@ -159,12 +173,18 @@ export class ProductsController {
   async findByBarcode(
     @Param('barcode') barcode: string,
   ): Promise<ProductResponseDto> {
+    const cacheKey = `product:barcode:${barcode}`;
+    const cached = await this.cacheManager.get<string>(cacheKey);
+    if (cached) return JSON.parse(cached);
+
     const barcodeEntity = await this.barcodeRepository.findOne({
       where: { barcode },
       relations: ['product', 'product.category', 'product.uoms'],
     });
     if (!barcodeEntity) throw new NotFoundException('Barcode not found');
-    return this.toResponseDto(barcodeEntity.product);
+    const dto = this.toResponseDto(barcodeEntity.product);
+    await this.cacheManager.set(cacheKey, JSON.stringify(dto), 300);
+    return dto;
   }
 
   @Post(':id/uoms')

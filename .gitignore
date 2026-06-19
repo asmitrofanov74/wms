@@ -11,3 +11,5 @@ Thumbs.db
 *.pid
 docker-data/
 pgdata/
+
+backend/package-lock.json

@@ -10,6 +10,8 @@ import {
   UseGuards,
   NotFoundException,
   BadRequestException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -28,6 +30,7 @@ import {
   ShippingOrderResponseDto,
   ShippingOrderLineResponseDto,
 } from './dto/shipping.dto';
+import { paginate, PaginatedResult } from '../../application/common/pagination/pagination.service';
 
 @ApiTags('Shipping')
 @ApiBearerAuth()
@@ -47,44 +50,47 @@ export class ShippingController {
   @ApiOperation({ summary: 'List shipping orders' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   async findAll(
     @Query('search') search?: string,
     @Query('status') status?: string,
-  ): Promise<ShippingOrderResponseDto[]> {
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
+  ): Promise<PaginatedResult<ShippingOrderResponseDto>> {
     const where: any = {};
     if (status) where.status = status;
 
-    let orders: ShippingOrder[];
-    if (search) {
-      orders = await this.orderRepository.find({
-        where: [
-          { ...where, customer: Like(`%${search}%`) },
-          { ...where, orderNumber: Like(`%${search}%`) },
-        ],
-        relations: ['lines'],
-        order: { createdAt: 'DESC' },
-      });
-    } else {
-      orders = await this.orderRepository.find({
-        where,
-        relations: ['lines'],
-        order: { createdAt: 'DESC' },
-      });
-    }
+    const result = await paginate(this.orderRepository, { page, limit }, {
+      where: search
+        ? [{ ...where, customer: Like(`%${search}%`) }, { ...where, orderNumber: Like(`%${search}%`) }]
+        : where,
+      relations: ['lines'],
+      order: { createdAt: 'DESC' } as any,
+    });
 
-    return Promise.all(orders.map((o) => this.toResponseDto(o)));
+    const data = await Promise.all(result.data.map((o) => this.toResponseDto(o)));
+    return { data, meta: result.meta };
   }
 
   @Post()
   @Roles('Admin', 'Manager')
   @ApiOperation({ summary: 'Create a shipping order' })
   async create(@Body() dto: CreateShippingOrderDto): Promise<ShippingOrderResponseDto> {
-    const count = await this.orderRepository.count();
-    const orderNumber = `SO-${String(count + 1).padStart(6, '0')}`;
+    const result = await this.orderRepository.query(`SELECT nextval('shipping_order_seq') AS seq`);
+    const seq = result[0]?.seq || 1;
+    const orderNumber = `SO-${String(seq).padStart(6, '0')}`;
 
+    const productIds = [...new Set(dto.lines.map((l) => l.productId))];
+    const existingProducts = await this.productRepository.find({
+      where: { id: In(productIds) },
+      select: ['id'],
+    });
+    const existingIds = new Set(existingProducts.map((p) => p.id));
     for (const line of dto.lines) {
-      const product = await this.productRepository.findOne({ where: { id: line.productId } });
-      if (!product) throw new BadRequestException(`Product ${line.productId} not found`);
+      if (!existingIds.has(line.productId)) {
+        throw new BadRequestException(`Product ${line.productId} not found`);
+      }
     }
 
     const order = new ShippingOrder();

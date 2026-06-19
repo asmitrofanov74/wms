@@ -4,6 +4,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { BaseEntity } from '../common/base.entity';
 import { Category } from './category.entity';
@@ -11,6 +12,8 @@ import { ProductUom } from './product-uom.entity';
 import { ProductBarcode } from './barcode.entity';
 
 @Entity('products')
+@Index(['categoryId'])
+@Index(['name'])
 export class Product extends BaseEntity {
   @Column({ unique: true, length: 50 })
   sku: string;

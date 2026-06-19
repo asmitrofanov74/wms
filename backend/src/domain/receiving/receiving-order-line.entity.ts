@@ -1,8 +1,10 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../common/base.entity';
 import { ReceivingOrder } from './receiving-order.entity';
 
 @Entity('receiving_order_lines')
+@Index(['receivingOrderId'])
+@Index(['productId'])
 export class ReceivingOrderLine extends BaseEntity {
   @Column()
   receivingOrderId: string;

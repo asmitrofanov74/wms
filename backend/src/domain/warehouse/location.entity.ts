@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../common/base.entity';
 import { WarehouseZone } from './zone.entity';
 
@@ -11,6 +11,8 @@ export enum LocationType {
 }
 
 @Entity('bin_locations')
+@Index(['zoneId'])
+@Index(['barcode'])
 export class BinLocation extends BaseEntity {
   @ManyToOne(() => WarehouseZone, (z) => z.locations)
   @JoinColumn({ name: 'zone_id' })

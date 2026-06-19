@@ -6,11 +6,14 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   NotFoundException,
   BadRequestException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -18,6 +21,7 @@ import { RolesGuard, Roles } from '../common/guards/roles.guard';
 import { Role } from '../../domain/auth/role.entity';
 import { Permission } from '../../domain/auth/permission.entity';
 import { CreateRoleDto, UpdateRoleDto, RoleResponseDto } from './dto/role.dto';
+import { paginate, PaginatedResult } from '../../application/common/pagination/pagination.service';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
@@ -41,9 +45,17 @@ export class RolesController {
   @Get()
   @Roles('Admin')
   @ApiOperation({ summary: 'List all roles' })
-  async findAll(): Promise<RoleResponseDto[]> {
-    const roles = await this.roleRepository.find({ relations: ['permissions'] });
-    return roles.map(this.toResponseDto);
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  async findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
+  ): Promise<PaginatedResult<RoleResponseDto>> {
+    const result = await paginate(this.roleRepository, { page, limit }, {
+      relations: ['permissions'],
+      order: { name: 'ASC' } as any,
+    });
+    return { data: result.data.map(this.toResponseDto), meta: result.meta };
   }
 
   @Post()

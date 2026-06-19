@@ -8,10 +8,12 @@ import {
   UseGuards,
   NotFoundException,
   BadRequestException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, In } from 'typeorm';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../common/guards/roles.guard';
 import { InventoryItem } from '../../domain/inventory/inventory-item.entity';
@@ -20,6 +22,7 @@ import {
   AdjustInventoryDto,
   InventoryItemResponseDto,
 } from './dto/inventory.dto';
+import { paginate, PaginatedResult } from '../../application/common/pagination/pagination.service';
 
 @ApiTags('Inventory')
 @ApiBearerAuth()
@@ -37,11 +40,15 @@ export class InventoryController {
   @ApiOperation({ summary: 'List inventory items' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'lowStock', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   async findAll(
     @Query('search') search?: string,
     @Query('lowStock') lowStock?: string,
-  ): Promise<InventoryItemResponseDto[]> {
-    let items: InventoryItem[];
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
+  ): Promise<PaginatedResult<InventoryItemResponseDto>> {
+    let productIds: string[] | undefined;
 
     if (search) {
       const products = await this.productRepository.find({
@@ -49,34 +56,31 @@ export class InventoryController {
           { name: Like(`%${search}%`) },
           { sku: Like(`%${search}%`) },
         ],
+        select: ['id'],
       });
-      const productIds = products.map((p) => p.id);
-      if (productIds.length > 0) {
-        items = await this.inventoryRepository.find({
-          where: productIds.map((id) => ({ productId: id })),
-          relations: ['product'],
-          order: { updatedAt: 'DESC' },
-        });
-      } else {
-        items = [];
-      }
-    } else {
-      items = await this.inventoryRepository.find({
-        relations: ['product'],
-        order: { updatedAt: 'DESC' },
-      });
+      productIds = products.map((p) => p.id);
     }
 
-    let result = items.map((item) => this.toResponseDto(item));
+    const where = productIds !== undefined
+      ? productIds.map((id) => ({ productId: id }))
+      : undefined;
+
+    const result = await paginate(this.inventoryRepository, { page, limit }, {
+      where: where as any,
+      relations: ['product'],
+      order: { updatedAt: 'DESC' } as any,
+    });
+
+    let data = result.data.map((item) => this.toResponseDto(item));
 
     if (lowStock === 'true') {
-      result = result.filter(
+      data = data.filter(
         (item) =>
           item.reorderPoint > 0 && item.quantityOnHand <= item.reorderPoint,
       );
     }
 
-    return result;
+    return { data, meta: result.meta };
   }
 
   @Get(':id')

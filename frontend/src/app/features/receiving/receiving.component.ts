@@ -26,7 +26,7 @@ import { ReceivingOrder, Product } from '../../shared/models/api-response';
     DatePipe, FormsModule,
     MatTableModule, MatSortModule, MatPaginatorModule,
     MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule,
-    MatSelectModule, MatChipsModule, MatTooltipModule, MatDialogModule,
+    MatSelectModule, MatTooltipModule, MatDialogModule,
     MatSnackBarModule, MatProgressSpinnerModule,
   ],
   template: `

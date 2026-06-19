@@ -1,8 +1,9 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../common/base.entity';
 import { Product } from './product.entity';
 
 @Entity('product_uoms')
+@Index(['productId'])
 export class ProductUom extends BaseEntity {
   @ManyToOne(() => Product, (p) => p.uoms)
   @JoinColumn({ name: 'product_id' })
