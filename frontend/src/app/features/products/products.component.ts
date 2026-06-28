@@ -127,7 +127,9 @@ import { Product, Category } from '../../shared/models/api-response';
             <tr mat-header-row *matHeaderRowDef="productColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: productColumns;"></tr>
           </table>
-          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+          @if (productDataSource.filteredData.length > 10) {
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+          }
         </div>
       </mat-tab>
 
@@ -184,7 +186,9 @@ import { Product, Category } from '../../shared/models/api-response';
             <tr mat-header-row *matHeaderRowDef="categoryColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: categoryColumns;"></tr>
           </table>
-          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+          @if (categoryDataSource.filteredData.length > 10) {
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+          }
         </div>
       </mat-tab>
     </mat-tab-group>

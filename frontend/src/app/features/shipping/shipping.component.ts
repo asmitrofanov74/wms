@@ -176,7 +176,9 @@ import { ShippingOrder, Product } from '../../shared/models/api-response';
           </tr>
         }
       </table>
-      <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+      @if (dataSource.filteredData.length > 10) {
+        <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+      }
     </div>
   `,
   styles: [`

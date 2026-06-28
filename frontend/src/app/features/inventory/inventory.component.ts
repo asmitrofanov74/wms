@@ -93,7 +93,9 @@ import { InventoryItem } from '../../shared/models/api-response';
           </tr>
         }
       </table>
-      <mat-paginator [length]="totalItems" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+      @if (dataSource.filteredData.length > 10) {
+        <mat-paginator [length]="totalItems" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+      }
     </div>
   `,
   styles: [`

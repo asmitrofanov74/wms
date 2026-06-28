@@ -218,7 +218,9 @@ import { Warehouse, Zone, Location } from '../../shared/models/api-response';
         <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row-no-hover"></tr>
       </table>
 
-      <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+      @if (dataSource.filteredData.length > 10) {
+        <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+      }
     </div>
   `,
   styles: [`
