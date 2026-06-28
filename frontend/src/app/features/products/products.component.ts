@@ -238,9 +238,9 @@ export class ProductsComponent implements OnInit {
   loadProducts(): void {
     this.loadingProducts.set(true);
     this.service.getProducts(this.productSearch || undefined, this.selectedCategoryId || undefined).subscribe({
-      next: (data) => {
-        this.products.set(data);
-        this.productDataSource.data = data;
+      next: (res) => {
+        this.products.set(res.data);
+        this.productDataSource.data = res.data;
         this.productDataSource.sort = this.sort;
         this.productDataSource.paginator = this.paginator;
         this.loadingProducts.set(false);

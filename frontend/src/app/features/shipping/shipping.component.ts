@@ -436,7 +436,7 @@ export class ShippingFormDialog implements OnInit {
 
   ngOnInit(): void {
     this.productService.getProducts().subscribe({
-      next: (data) => this.products.set(data),
+      next: (res) => this.products.set(res.data),
     });
 
     if (this.data.order) {

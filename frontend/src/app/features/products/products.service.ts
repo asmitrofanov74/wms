@@ -1,18 +1,18 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product, Category, ProductUom, ProductBarcode, CreateProductRequest, UpdateProductRequest, CreateUomRequest, CreateBarcodeRequest } from '../../shared/models/api-response';
+import { Product, Category, PaginatedResponse, ProductUom, ProductBarcode, CreateProductRequest, UpdateProductRequest, CreateUomRequest, CreateBarcodeRequest } from '../../shared/models/api-response';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   private http = inject(HttpClient);
 
-  getProducts(search?: string, categoryId?: string, active?: boolean): Observable<Product[]> {
+  getProducts(search?: string, categoryId?: string, active?: boolean): Observable<PaginatedResponse<Product>> {
     let params: any = {};
     if (search) params.search = search;
     if (categoryId) params.categoryId = categoryId;
     if (active !== undefined) params.active = active;
-    return this.http.get<Product[]>('/api/v1/products', { params });
+    return this.http.get<PaginatedResponse<Product>>('/api/v1/products', { params });
   }
 
   getProduct(id: string): Observable<Product> {

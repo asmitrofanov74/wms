@@ -412,14 +412,14 @@ export class ReceivingFormDialog implements OnInit {
   ngOnInit(): void {
     this.productsLoading.set(true);
     this.productService.getProducts().subscribe({
-      next: (data) => {
-        this.products.set(data);
+      next: (res) => {
+        this.products.set(res.data);
         this.productsLoading.set(false);
         if (this.data.order) {
           this.form.supplier = this.data.order.supplier;
           this.form.notes = this.data.order.notes;
           this.form.lines = this.data.order.lines.map((l) => {
-            const p = data.find((x) => x.id === l.productId);
+            const p = res.data.find((x) => x.id === l.productId);
             return {
               _id: this.nextId++,
               productId: l.productId,
