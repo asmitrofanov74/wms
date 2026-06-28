@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -93,7 +93,7 @@ import { InventoryItem } from '../../shared/models/api-response';
           </tr>
         }
       </table>
-      <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+      <mat-paginator [length]="totalItems" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
     </div>
   `,
   styles: [`
@@ -131,13 +131,21 @@ export class InventoryComponent implements OnInit {
     this.loadItems();
   }
 
+  totalItems = 0;
+
+  ngAfterViewInit(): void {
+    this.paginator.page.subscribe(() => this.loadItems());
+  }
+
   loadItems(): void {
     this.loading.set(true);
-    this.service.getItems(this.search || undefined, this.lowStockOnly || undefined).subscribe({
-      next: (data) => {
-        this.dataSource.data = data;
+    const page = this.paginator ? this.paginator.pageIndex + 1 : 1;
+    const limit = this.paginator ? this.paginator.pageSize : 20;
+    this.service.getItems(this.search || undefined, this.lowStockOnly || undefined, page, limit).subscribe({
+      next: (res) => {
+        this.dataSource.data = res.data;
+        this.totalItems = res.meta.total;
         this.dataSource.sort = this.sort;
-        this.dataSource.paginator = this.paginator;
         this.loading.set(false);
       },
       error: () => this.loading.set(false),

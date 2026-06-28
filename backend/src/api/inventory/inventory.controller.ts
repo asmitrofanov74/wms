@@ -65,22 +65,40 @@ export class InventoryController {
       ? productIds.map((id) => ({ productId: id }))
       : undefined;
 
-    const result = await paginate(this.inventoryRepository, { page, limit }, {
-      where: where as any,
-      relations: ['product'],
-      order: { updatedAt: 'DESC' } as any,
-    });
+    const qb = this.inventoryRepository.createQueryBuilder('inv')
+      .leftJoinAndSelect('inv.product', 'product');
 
-    let data = result.data.map((item) => this.toResponseDto(item));
-
-    if (lowStock === 'true') {
-      data = data.filter(
-        (item) =>
-          item.reorderPoint > 0 && item.quantityOnHand <= item.reorderPoint,
-      );
+    if (where) {
+      qb.andWhere('inv.productId IN (:...productIds)', { productIds });
     }
 
-    return { data, meta: result.meta };
+    if (lowStock === 'true') {
+      qb.andWhere('inv.reorderPoint > 0 AND inv.quantityOnHand <= inv.reorderPoint');
+    }
+
+    const pageNum = Math.max(1, page || 1);
+    const limitNum = Math.min(100, Math.max(1, limit || 20));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [items, total] = await qb
+      .orderBy('inv.updatedAt', 'DESC')
+      .skip(skip)
+      .take(limitNum)
+      .getManyAndCount();
+
+    const totalPages = Math.ceil(total / limitNum);
+
+    return {
+      data: items.map((item) => this.toResponseDto(item)),
+      meta: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages,
+        hasNextPage: pageNum < totalPages,
+        hasPreviousPage: pageNum > 1,
+      },
+    };
   }
 
   @Get(':id')
