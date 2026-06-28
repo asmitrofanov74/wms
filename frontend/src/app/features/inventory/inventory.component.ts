@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, inject, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -94,7 +94,7 @@ import { InventoryItem } from '../../shared/models/api-response';
         }
       </table>
       @if (dataSource.filteredData.length > 10) {
-        <mat-paginator [length]="totalItems" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+        <mat-paginator [length]="totalItems" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons (page)="loadItems()"/>
       }
     </div>
   `,
@@ -134,10 +134,6 @@ export class InventoryComponent implements OnInit {
   }
 
   totalItems = 0;
-
-  ngAfterViewInit(): void {
-    this.paginator.page.subscribe(() => this.loadItems());
-  }
 
   loadItems(): void {
     this.loading.set(true);
