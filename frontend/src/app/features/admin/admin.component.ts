@@ -106,7 +106,9 @@ import { RoleFormDialog } from './role-form.dialog';
             <tr mat-header-row *matHeaderRowDef="userColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: userColumns;"></tr>
           </table>
-          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+          @if (userDataSource.filteredData.length > 10) {
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+          }
         </div>
       </mat-tab>
 
@@ -163,7 +165,9 @@ import { RoleFormDialog } from './role-form.dialog';
             <tr mat-header-row *matHeaderRowDef="roleColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: roleColumns;"></tr>
           </table>
-          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+          @if (roleDataSource.filteredData.length > 10) {
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons/>
+          }
         </div>
       </mat-tab>
     </mat-tab-group>
