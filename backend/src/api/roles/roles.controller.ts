@@ -103,7 +103,6 @@ export class RolesController {
   ): Promise<RoleResponseDto> {
     const role = await this.roleRepository.findOne({ where: { id } });
     if (!role) throw new NotFoundException('Role not found');
-    if (role.isSystem) throw new BadRequestException('Cannot modify system role');
 
     if (dto.name) role.name = dto.name;
     if (dto.description !== undefined) role.description = dto.description;

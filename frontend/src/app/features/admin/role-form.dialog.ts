@@ -57,8 +57,7 @@ interface DialogData {
             @for (perm of group.permissions; track perm.id) {
               <mat-checkbox
                 [checked]="selectedPermissionIds().includes(perm.id)"
-                (change)="togglePermission(perm.id)"
-                [disabled]="data.role?.isSystem ?? false">
+                (change)="togglePermission(perm.id)">
                 {{ perm.action | titlecase }}
               </mat-checkbox>
             }
@@ -73,7 +72,7 @@ interface DialogData {
 
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close [disabled]="saving()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !form.name || (data.role?.isSystem ?? false)">
+      <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || !form.name">
         @if (saving()) {
           <mat-spinner diameter="20"/>
         }
