@@ -1,14 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User, Role, Permission, CreateUserRequest, UpdateUserRequest, CreateRoleRequest, UpdateRoleRequest } from '../../shared/models/api-response';
+import { User, Role, Permission, PaginatedResponse, CreateUserRequest, UpdateUserRequest, CreateRoleRequest, UpdateRoleRequest } from '../../shared/models/api-response';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private http = inject(HttpClient);
 
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>('/api/v1/users');
+  getUsers(): Observable<PaginatedResponse<User>> {
+    return this.http.get<PaginatedResponse<User>>('/api/v1/users');
   }
 
   getUser(id: string): Observable<User> {
@@ -31,8 +31,8 @@ export class AdminService {
     return this.http.delete<void>(`/api/v1/users/${id}`);
   }
 
-  getRoles(): Observable<Role[]> {
-    return this.http.get<Role[]>('/api/v1/roles');
+  getRoles(): Observable<PaginatedResponse<Role>> {
+    return this.http.get<PaginatedResponse<Role>>('/api/v1/roles');
   }
 
   getRole(id: string): Observable<Role> {

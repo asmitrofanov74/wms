@@ -212,9 +212,9 @@ export class AdminComponent implements OnInit {
   loadUsers(): void {
     this.loadingUsers.set(true);
     this.admin.getUsers().subscribe({
-      next: (data) => {
-        this.users.set(data);
-        this.userDataSource.data = data;
+      next: (res) => {
+        this.users.set(res.data);
+        this.userDataSource.data = res.data;
         this.userDataSource.sort = this.sort;
         this.userDataSource.paginator = this.paginator;
         this.loadingUsers.set(false);
@@ -226,9 +226,9 @@ export class AdminComponent implements OnInit {
   loadRoles(): void {
     this.loadingRoles.set(true);
     this.admin.getRoles().subscribe({
-      next: (data) => {
-        this.roles.set(data);
-        this.roleDataSource.data = data;
+      next: (res) => {
+        this.roles.set(res.data);
+        this.roleDataSource.data = res.data;
         this.loadingRoles.set(false);
       },
       error: () => this.loadingRoles.set(false),
